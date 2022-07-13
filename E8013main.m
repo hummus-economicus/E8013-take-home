@@ -13,16 +13,14 @@ tol = 10^(-3);
 % Inner Loop: VFI on Surplus 
 grid = linspace(0,1,grid_size);
 
-% set intial surplus to production value f(x,y) = xy
-%S_init = nan(grid_size,grid_size,2); 
-%S_init(:,:,1) = repmat(grid,grid_size,1).*repmat(grid',1,grid_size);
-%S_init(:,:,2) = repmat(grid,grid_size,1).*repmat(grid',1,grid_size);
-
 S_init = zeros(grid_size,grid_size,2); 
 
 % trial with uniform distribution for unemployed and vacancies: 
 u = ones(1,grid_size)/grid_size;
 v = ones(1,grid_size,2)/grid_size;
+v(:,:,1) = v(:,:,1)*phi 
+v(:,:,1) = v(:,:,2)*(1-phi) 
+
 S_n = VFI_surplus(S_init,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,u,v,tol);
 
 
@@ -54,6 +52,10 @@ plot(grid,up_h)
 patch([grid fliplr(grid)], [low_h' fliplr(up_h')], 'b')
 title("Matching set for low job security")
 hold off
+
+
+
+
 
 
 
