@@ -1,4 +1,4 @@
-function S_n = VFI_surplus(S_init,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,u,v,tol,MaxIt)
+function S_n = VFI_surplus(S_init,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,u_n,v_n,tol,MaxIt)
 % -------------------------------------------------------------------------
 % This function performs a value function ...
 % 
@@ -25,25 +25,28 @@ flow = repmat(grid,grid_size,1).*repmat(grid',1,grid_size)-b;
 S_n = S_init;
 
 check_S=1;
-it = 0
-while (check_S > tol & it < MaxIt)
-    it = it + 1; 
+it = 0;
+while (check_S > tol && it < MaxIt)
+    it = it + 1 
+    if it == MaxIt
+        disp('Failed to converge!')
+    end 
     % define S+ = max(S(x,y,sig),0):
     S_plus = max(S_n,0);
     % define total number of unemployed and vacancies:
-    U = sum(u); 
-    V = phi*sum(v(:,:,1),'all') + (1-phi)*sum(v(:,:,2),'all');
+    U = sum(u_n); 
+    V = phi*sum(v_n(:,:,1),'all') + (1-phi)*sum(v_n(:,:,2),'all');
     
 for x = 1:grid_size
     for y = 1:grid_size 
         S_n1(x,y,1) = flow(x,y)  ...
-                        - (1-alpha)*beta*lambda*S_plus(:,y,1)'*u'/U ...
-                        - alpha*beta*lambda*( phi*S_plus(x,:,1)*v(:,:,1)'/V ...
-                        + (1-phi)*S_plus(x,:,2)*v(:,:,1)'/V) ;
+                        - (1-alpha)*beta*lambda*S_plus(:,y,1)'*u_n'/U ...
+                        - alpha*beta*lambda*( phi*S_plus(x,:,1)*v_n(:,:,1)'/V ...
+                        + (1-phi)*S_plus(x,:,2)*v_n(:,:,1)'/V) ;
         S_n1(x,y,2) = flow(x,y)  ...
-                        - (1-alpha)*beta*lambda*S_plus(:,y,1)'*u'/U ...
-                        - alpha*beta*lambda*( phi*S_plus(x,:,1)*v(:,:,1)'/V ...
-                        + (1-phi)*S_plus(x,:,2)*v(:,:,1)'/V) ;
+                        - (1-alpha)*beta*lambda*S_plus(:,y,1)'*u_n'/U ...
+                        - alpha*beta*lambda*( phi*S_plus(x,:,1)*v_n(:,:,1)'/V ...
+                        + (1-phi)*S_plus(x,:,2)*v_n(:,:,1)'/V) ;
         S_n1(x,y,1) = (1-(1-sigL)*beta)^(-1)*S_n1(x,y,1) ;
         S_n1(x,y,2) = (1-(1-sigH)*beta)^(-1)*S_n1(x,y,2) ;
     end 
@@ -51,10 +54,11 @@ end
     
     check_S_h = max(  abs( S_n1(:,:,1)-S_n(:,:,1) ) , [], 1 );
     check_S_l = max(  abs( S_n1(:,:,2)-S_n(:,:,2) ) , [], 1 );
-    check_S = max(check_S_h,check_S_l);
+    check_S = max([check_S_h,check_S_l]);
     
     S_n = S_n1;
     
 end
 
 end
+
