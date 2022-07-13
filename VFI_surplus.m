@@ -1,4 +1,4 @@
-function S_n = VFI_surplus(S_init,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,u,v,tol)
+function S_n = VFI_surplus(S_init,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,u,v,tol,MaxIt)
 % -------------------------------------------------------------------------
 % This function performs a value function ...
 % 
@@ -8,6 +8,7 @@ function S_n = VFI_surplus(S_init,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,u,
 % - u: density of unemployed (1xgrid_size) vector
 % - v: density of vacancies  (1xgrid_sizex2) vector
 % - tol: tolerance value for convergence 
+% - MaxIt: Maximum number of iterations 
 % -------------------------------------------------------------------------
 
 % Creating equidistant grid for productivities x,y
@@ -24,8 +25,9 @@ flow = repmat(grid,grid_size,1).*repmat(grid',1,grid_size)-b;
 S_n = S_init;
 
 check_S=1;
-while (check_S > tol)
-
+it = 0
+while (check_S > tol & it < MaxIt)
+    it = it + 1; 
     % define S+ = max(S(x,y,sig),0):
     S_plus = max(S_n,0);
     % define total number of unemployed and vacancies:
