@@ -27,7 +27,6 @@ S_n = S_init;
 check_S=1;
 it = 0;
 while (check_S > tol && it < MaxIt)
-    it = it + 1 
     if it == MaxIt
         disp('Failed to converge!')
     end 
@@ -36,27 +35,17 @@ while (check_S > tol && it < MaxIt)
     % define total number of unemployed and vacancies:
     U = sum(u_n); 
     V = phi*sum(v_n(:,:,1),'all') + (1-phi)*sum(v_n(:,:,2),'all');
-    
-for x = 1:grid_size
-    for y = 1:grid_size 
-        S_n1(x,y,1) = flow(x,y)  ...
-                        - (1-alpha)*beta*lambda*S_plus(:,y,1)'*u_n'/U ...
-                        - alpha*beta*lambda*( phi*S_plus(x,:,1)*v_n(:,:,1)'/V ...
-                        + (1-phi)*S_plus(x,:,2)*v_n(:,:,1)'/V) ;
-        S_n1(x,y,2) = flow(x,y)  ...
-                        - (1-alpha)*beta*lambda*S_plus(:,y,1)'*u_n'/U ...
-                        - alpha*beta*lambda*( phi*S_plus(x,:,1)*v_n(:,:,1)'/V ...
-                        + (1-phi)*S_plus(x,:,2)*v_n(:,:,1)'/V) ;
-        S_n1(x,y,1) = (1-(1-sigL)*beta)^(-1)*S_n1(x,y,1) ;
-        S_n1(x,y,2) = (1-(1-sigH)*beta)^(-1)*S_n1(x,y,2) ;
-    end 
-end
-    
-    check_S_h = max(  abs( S_n1(:,:,1)-S_n(:,:,1) ) , [], 1 );
-    check_S_l = max(  abs( S_n1(:,:,2)-S_n(:,:,2) ) , [], 1 );
-    check_S = max([check_S_h,check_S_l]);
+    S_n1(:,:,1) = (flow + (1-sigL)*beta*S_n(:,:,1) - (1-alpha)*beta*lambda*(1/U)*u_n*S_plus(:,:,1)...
+        - alpha*beta*lambda*( phi*S_plus(:,:,1)*v_n(:,:,1)'*(1/V) ...
+                    + (1-phi)*S_plus(:,:,2)*v_n(:,:,2)'*(1/V) ));
+    S_n1(:,:,2) = (flow + (1-sigL)*beta*S_n(:,:,2) - (1-alpha)*beta*lambda*(1/U)*u_n*S_plus(:,:,2)...
+        - alpha*beta*lambda*( phi*S_plus(:,:,1)*v_n(:,:,1)'*(1/V) ...
+                    + (1-phi)*S_plus(:,:,2)*v_n(:,:,2)'*(1/V) ));
+
+    check_S = max(abs(S_n1 - S_n),[],'all')
     
     S_n = S_n1;
+    it = it + 1 
     
 end
 
