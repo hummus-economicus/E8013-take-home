@@ -91,4 +91,47 @@ title("Matching set for low job security")
 hold off
 
 
+%% Question 7: equilibrium wages
+
+w = nan(grid_size,grid_size,2);
+V = phi*sum(v_n(:,:,1),'all') + (1-phi)*sum(v_n(:,:,2),'all');
+
+for x = 1:grid_size
+   for y = 1:grid_size
+       w(x,y,1) = (1- beta*(1-sigL))*alpha*Sn1(x,y,1) + b ...
+                   + alpha*beta*lambda*( phi*S_plus(x,:,1)*v_n(:,:,1)'/V ...
+                        + (1-phi)*S_plus(x,:,2)*v_n(:,:,2)'/V) 
+       w(x,y,2) = (1- beta*(1-sigH))*alpha*Sn1(x,y,2) + b ...
+                   + alpha*beta*lambda*( phi*S_plus(x,:,1)*v_n(:,:,1)'/V ...
+                        + (1-phi)*S_plus(x,:,2)*v_n(:,:,2)'/V) 
+   end
+end 
+
+% Plot of log-wage for different y and sigma values 
+
+figure; 
+subplot(1,2,1)
+plot(grid,log(w(x,1,1)))
+hold on 
+plot(grid,log(w(x,200,1)))
+hold on 
+plot(grid,log(w(x,400,1)))
+title("Equilibrium log-wage for high job security ")
+xlabel('x');
+ylabel('log(w(x,y,sigma_l))');
+l=legend('y = 0','y = 0.3988','y = 0.7996');
+set(l,'Location','SouthEast');
+hold off 
+subplot(1,2,2)
+plot(grid,log(w(x,1,2)))
+hold on 
+plot(grid,log(w(x,200,2)))
+hold on 
+plot(grid,log(w(x,400,2)))
+title("Equilibrium log-wage for low job security ")
+xlabel('x');
+ylabel('log(w(x,y,sigma_h))');
+l=legend('y = 0','y = 0.3988','y = 0.7996');
+set(l,'Location','SouthEast');
+hold off 
 
