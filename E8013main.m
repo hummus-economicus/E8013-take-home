@@ -2,17 +2,17 @@
 clear all; 
 clc; 
 
-%% Calibration
+%% Parameters
 b = 0; alpha = 0.5; beta = 0.994; sigL = 0.02; sigH = 0.08;
-phi = 0.5; lambda = 0.3; grid_size = 500; 
+phi = 0.5; lambda = 0.3; grid_size = 1000; 
 tol = 10^(-3);
-tol_out = 10^(-15); % tolerance value for outer loop
+tol_out = 10^(-5); % tolerance value for outer loop
 MaxIt = 10^4; 
 
 
 %% Question 4: solve 
 
-grid = linspace(0,1,grid_size);
+grid = linspace(grid_size^(-1),1-grid_size^(-1),grid_size);
 
 % Initial guess: 
 S_init = zeros(grid_size,grid_size,2); 
@@ -25,40 +25,40 @@ v_init(:,:,1) = v_init(:,:,2)*(1-phi) ;
 u_n = u_init; 
 v_n = v_init;
 
-v_n1 = nan(grid_size,1,2);
-u_n1 = nan(grid_size,1);
+u_n1 = nan(1,grid_size);
+v_n1 = nan(1,grid_size,2);
 
 check=1;
 it = 0
-while (check > tol_out & it < MaxIt)
-    it = it + 1; 
+while (check > tol_out)
+    if it == MaxIt
+        disp('Failed to converge!')
+        break
+    end 
+
     S_n1 = VFI_surplus(S_init,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,u_n,v_n,tol,MaxIt);
 
 % update distributions 
     
-    for y = 1:grid_size 
-       auxL = S_n1(:,y,1)>=0./( S_n1(:,y,1)<0 +sigL*(S_n1(:,y,1)>=0) ) 
-       auxH = S_n1(:,y,2)>=0./( S_n1(:,y,2)<0 +sigH*(S_n1(:,y,2)>=0) ) 
+    v_n1(:,:,1) = (( 1 + lambda*u_n*( (S_n1(:,:,1)>=0)./( (S_n1(:,:,1)<0) + sigL*(S_n1(:,:,1)>=0) ) ) )/phi).^(-1);
+    v_n1(:,:,2) = (( 1 + lambda*u_n*( (S_n1(:,:,2)>=0)./( (S_n1(:,:,2)<0) + sigH*(S_n1(:,:,2)>=0) ) ) )/(1-phi)).^(-1);
 
-       v_n1(:,:,1) = phi/(1 + u_n*lambda*auxL )
-       v_n1(:,:,2) = (1-phi)/(1 + u_n*lambda*auxH )
-    end 
-    for x = 1:grid_size
-        auxL = S_n1(x,:,1)>=0./( S_n1(x,:,1)<0 +sigL*(S_n1(x,:,1)>=0) ) 
-        auxH = S_n1(x,:,2)>=0./( S_n1(x,:,2)<0 +sigH*(S_n1(x,:,2)>=0) ) 
-        u_n1(x,:) = 1/(1 + phi*v_n(:,:,1)*lambda*auxL' + (1-phi)*v_n(:,:,2)*lambda*auxH' )
-    end
+    auxL = (S_n1(:,:,1)>=0)./( (S_n1(:,:,1)<0) + sigL*(S_n1(:,:,1)>=0) );
+    auxH = (S_n1(:,:,2)>=0)./( (S_n1(:,:,2)<0) + sigH*(S_n1(:,:,2)>=0) );
+    u_n1 = ( 1 + phi*lambda*v_n(:,:,1)*auxL' + (1-phi)*lambda*v_n(:,:,2)*auxH' ).^(-1);
     
-    check_v = max(  abs( v_n1-v_n ) , [], 1 );
-    check_u = max(  abs( u_n1-u_n ) , [], 1 );
+    check_v = max(  abs( v_n1-v_n ) , [], 'all' );
+    check_u = max(  abs( u_n1-u_n ) , [], 'all' );
 
-    check = max([check_v,check_u]);
+    check = max([check_v,check_u])
 
     S_init = S_n1; 
     u_n = u_n1;
     v_n = v_n1;
+
+    it = it + 1
     
-end 
+end; if check < tol_out; disp('converged.'); end 
 
 
 %% Question 5: Plotting equilibrium matching sets conditional on job security sigma 
@@ -67,13 +67,16 @@ low_l = nan(1,grid_size);
 up_h = nan(1,grid_size);
 low_h = nan(1,grid_size);
 
-% for high job security (sigL)
-S_plus = max(S_n,0);
-% highest and lowest possible match for given x: 
-up_l = max(S_plus(:,:,1),[],2); % max over columns 
-low_l= min(S_plus(:,:,1),[],2);
-up_h = max(S_plus(:,:,2),[],2); % max over columns 
-low_h= min(S_plus(:,:,2),[],2);
+S_plus = max(S_init,0);
+
+for x = 1:grid_size
+    if isempty(find(S_plus(x,:,1),1,'last')); up_l(x) = NaN; else; up_l(x) = grid(find(S_plus(x,:,1),1,'last')); end
+    if isempty(find(S_plus(x,:,1),1)); low_l(x) = NaN; else; low_l(x) = grid(find(S_plus(x,:,1),1)); end
+
+    if isempty(find(S_plus(x,:,2),1,'last')); up_h(x) = NaN; else; up_h(x) = grid(find(S_plus(x,:,2),1,'last')); end
+    if isempty(find(S_plus(x,:,2),1)); low_h(x) = NaN; else; low_h(x) = grid(find(S_plus(x,:,2),1)); end
+end 
+
 
 figure
 subplot(1,2,1)
