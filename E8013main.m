@@ -6,6 +6,7 @@ clc;
 b = 0; alpha = 0.5; beta = 0.994; sigL = 0.02; sigH = 0.08;
 phi = 0.5; lambda = 0.3; grid_size = 500; 
 tol = 10^(-3);
+tol_out = 10^(-15); % tolerance value for outer loop
 MaxIt = 10^4; 
 
 
@@ -29,7 +30,7 @@ u_n1 = nan(grid_size,1);
 
 check=1;
 it = 0
-while (check > tol & it < MaxIt)
+while (check > tol_out & it < MaxIt)
     it = it + 1; 
     S_n1 = VFI_surplus(S_init,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,u_n,v_n,tol,MaxIt);
 
