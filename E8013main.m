@@ -60,6 +60,9 @@ while (check > tol_out)
     
 end; if check < tol_out; disp('converged.'); end 
 
+% save surplus matrix
+save surplus.mat S_init 
+
 
 %% Question 5: Plotting equilibrium matching sets conditional on job security sigma 
 up_l = nan(1,grid_size);
