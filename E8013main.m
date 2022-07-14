@@ -101,7 +101,36 @@ T = 100; % time periods
 
 [M,F] = simulation(N_workers,N_firms,T,S,u_n,v_n,w,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,tol,tol_out,MaxIt);
 
+%% Question 8b - Regression  
 
+load surplus.mat
+
+% Keep first month of each year
+months = (1:56)*12 - 11;
+W = M(:,:,months);
+% Eliminate burn-in period of 50 years:
+W = W(:,:,51:end);
+% reduce to 2 dimensions:
+W = reshape(permute(W, [1 3 2]),6*N_workers,7);
+% Keep employed workers:  
+W(W(:,3)==0,:) = [];
+
+% Create new column for wages 
+row = W(:,2);% grid index of worker productivity
+col = W(:,6);% grid index of firm productivity 
+col2 = W(:,7); % index of job security 
+W(:,8) = w(  sub2ind(  size(w), row,col,col2)  ) ; 
+
+% keep variables for regression 
+W(:,[2 3 5 6 7]) = [];
+W(:,3) = log(W(:,3));
+% 1st column = worker ID
+% 2nd column = firm ID
+% 3rd column = log-wage
+
+T = table(W);
+filename = 'regression_table.xlsx';
+writetable(T,filename,'Sheet',1,'Range','D1')
 
 
 %% Question: 12 - redoing for 
