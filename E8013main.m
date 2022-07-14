@@ -73,9 +73,9 @@ hold on
 plot(grid,log(w(:,600,1)))
 hold on 
 plot(grid,log(w(:,900,1)))
-title("Equilibrium log-wage for high job security ")
+title("high job security ")
 xlabel('x');
-ylabel('log(w(x,y,sigma_l))');
+ylabel('log(w(x,y,\sigma_l))');
 l=legend('y = 0.2997','y = 0.5994','y = 0.8991');
 set(l,'Location','SouthEast');
 hold off 
@@ -86,9 +86,9 @@ hold on
 plot(grid,log(w(:,600,2)))
 hold on 
 plot(grid,log(w(:,900,2)))
-title("Equilibrium log-wage for low job security ")
+title("low job security ")
 xlabel('x');
-ylabel('log(w(x,y,sigma_h))');
+ylabel('log(w(x,y,\sigma_h))');
 l=legend('y = 0.2997','y = 0.5994','y = 0.8991');
 set(l,'Location','SouthEast');
 hold off 
