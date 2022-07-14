@@ -15,6 +15,9 @@ MaxIt = 10^4;
 grid = linspace(grid_size^(-1),1-grid_size^(-1),grid_size);
 [S,u_n,v_n] = solve_model(b,alpha,beta,sigL,sigH,phi,lambda,grid_size,tol,tol_out,MaxIt);
 
+% save surplus matrix
+save surplus.mat S u_n v_n
+
 
 %% Question 5: Plotting equilibrium matching sets conditional on job security sigma 
 up_l = nan(1,grid_size);
@@ -52,36 +55,43 @@ hold off
 
 %% Question 7: equilibrium wages
 
+load surplus.mat
 w = equilibrium_wages(S,u_n,v_n,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,tol,tol_out,MaxIt);
 
-% Plot of log-wage for different y and sigma values 
+% replace negative values by zero
 
+w = max(w,0); 
+
+save surplus.mat S u_n v_n w
+
+% Plot of log-wage for different y and sigma values 
+%%
 figure; 
 subplot(1,2,1)
-plot(grid(S(:,1,1)>=0),log(w(S(:,1,1)>=0,1,1)))
+plot(grid,log(w(:,300,1)))
 hold on 
-plot(grid(S(:,200,1)>=0),log(w(S(:,200,1)>=0,200,1)))
+plot(grid,log(w(:,600,1)))
 hold on 
-plot(grid(S(:,400,1)>=0),log(w(S(:,400,1)>=0,400,1)))
-title("high job security ")
+plot(grid,log(w(:,900,1)))
+title("Equilibrium log-wage for high job security ")
 xlabel('x');
-ylabel('\log(w(x,y,\sigma_l))');
-l=legend('y = 0','y = 0.3988','y = 0.7996');
+ylabel('log(w(x,y,sigma_l))');
+l=legend('y = 0.2997','y = 0.5994','y = 0.8991');
 set(l,'Location','SouthEast');
 hold off 
+% plot low job security
 subplot(1,2,2)
-plot(grid(S(:,1,2)))>=0),log(w(S(:,1,2)))>=0,1,2)))
+plot(grid,log(w(:,300,2)))
 hold on 
-plot(grid(S(:,200,2)>=0),log(w(S(:,200,2)>=0,200,2)))
+plot(grid,log(w(:,600,2)))
 hold on 
-plot(grid(S(:,400,2)>=0),log(w(S(:,400,2)>=0,400,2)))
-title("low job security ")
+plot(grid,log(w(:,900,2)))
+title("Equilibrium log-wage for low job security ")
 xlabel('x');
-ylabel('\log(w(x,y,\sigma_h))');
-l=legend('y = 0','y = 0.3988','y = 0.7996');
+ylabel('log(w(x,y,sigma_h))');
+l=legend('y = 0.2997','y = 0.5994','y = 0.8991');
 set(l,'Location','SouthEast');
 hold off 
-
 
 %% Question: 8 - simulation 
 
