@@ -76,20 +76,21 @@ for x = 1:grid_size
     if isempty(find(S_plus(x,:,2),1,'last')); up_h(x) = NaN; else; up_h(x) = grid(find(S_plus(x,:,2),1,'last')); end
     if isempty(find(S_plus(x,:,2),1)); low_h(x) = NaN; else; low_h(x) = grid(find(S_plus(x,:,2),1)); end
 end 
-
+grid_l = grid(~isnan(low_l));
+grid_h = grid(~isnan(low_h));
 
 figure
 subplot(1,2,1)
 hold all
-plot(grid,low_l)
-plot(grid,up_l)
-patch([grid fliplr(grid)], [low_l' fliplr(up_l')], 'b')
+plot(grid,low_l,'Color',[0 0 0])
+plot(grid,up_l,'Color',[0 0 0])
+patch([grid_l fliplr(grid_l)]', [up_l(~isnan(low_l)) fliplr(low_l(~isnan(low_l)))]', [.5 .5 .5])
 title("Matching set for high job security")
 subplot(1,2,2)
 hold all
-plot(grid,low_h)
-plot(grid,up_h)
-patch([grid fliplr(grid)], [low_h' fliplr(up_h')], 'b')
+plot(grid,low_h,'Color',[0 0 0])
+plot(grid,up_h,'Color',[0 0 0])
+patch([grid_h fliplr(grid_h)]', [up_h(~isnan(low_h)) fliplr(low_h(~isnan(low_h)))]', [.5 .5 .5])
 title("Matching set for low job security")
 hold off
 
