@@ -137,7 +137,141 @@ T = table(W);
 filename = 'regression_table.xlsx';
 writetable(T,filename,'Sheet',1,'Range','D1')
 
-% W is 218000x3
+%% Question 9: replicate figure VII from Card et al.  
+
+% Eliminate burn-in period of 50 years:
+D = M(:,:,50*12+1:end);
+
+% Step 1 
+% Identify workers that switched job in 6 year period and held preceeding
+% job and new job for two or more years. 
+
+tic;
+for i=N_workers:-1:1 % N_workers 
+   i
+   aux = squeeze(D(i,3,:))';
+   
+   f = find(diff([0,aux,0]));
+   p = f(1:2:end-1);  % Start indices
+   y = f(2:2:end)-p;
+   
+   fi = find(diff([0,y,0]>23));
+   pi = fi(1:2:end-1);  % Start indices
+   yi = fi(2:2:end)-pi;
+   if (isempty(yi) ==0  && yi(1) ~= 2 )
+        D(i,:,:) = [];
+   elseif isempty(yi)
+        D(i,:,:) = []; 
+   end
+  
+end
+toc;
+
+save D.mat D
+load D
+
+% D = D(1:80,:,:); % TEST <- DELETE LATER
+D = D(:,:,[24 49]);
+
+% Create new column for wages 
+D = [D , zeros(size(D,1),1,2) ];
+
+row = D(:,2,1);% grid index of worker productivity
+col = D(:,6,1);% grid index of firm productivity 
+ col2 = D(:,7,1); % index of job security 
+D(:,8,1) =   w(  sub2ind(  size(w), row,col,col2 )  )  ; 
+
+row = D(:,2,2);% grid index of worker productivity
+col = D(:,6,2);% grid index of firm productivity 
+ col2 = D(:,7,2); % index of job security 
+D(:,8,2) =   w(  sub2ind(  size(w), row,col,col2 )  )  ; 
+
+% Step 2: Define quartiles based on firm-FE coefficients
+% import table as M_firm 
+
+load firmFE.mat 
+
+M_firm=table2array(firmFE);
+quants=quantile(M_firm(:,2), [0.25 0.5 0.75]);
+M_firm=[M_firm zeros(length(M_firm),4)];
+M_firm(:,3)=M_firm(:,2)<=quants(1);
+M_firm(:,4)=M_firm(:,2)>quants(1)&M_firm(:,2)<=quants(2);
+M_firm(:,5)=M_firm(:,2)>quants(2)&M_firm(:,2)<=quants(3);
+M_firm(:,6)=M_firm(:,2)>quants(3);
+M_firm(M_firm(:,3)==1,2)=1;
+M_firm(M_firm(:,4)==1,2)=2;
+M_firm(M_firm(:,5)==1,2)=3;
+M_firm(M_firm(:,6)==1,2)=4;
+M_firm=M_firm(:,1:2);
+
+% Step 3:  Merge D matrix with firm coefficient using firm ID 
+
+D(D(:,4,1)== 1110 | D(:,4,2)== 1110 ,:,:) = [];
+D(D(:,4,1)== 1780 | D(:,4,2)== 1780 ,:,:) = [];
+D(D(:,4,1)== 4669 | D(:,4,2)== 4669 ,:,:) = [];
+
+sub_1 = D(:,:,1);
+sub_2 =D(:,:,2);
+sub_1 = array2table(sub_1);
+sub_2 = array2table(sub_2);
+M_firm = array2table(M_firm);
+
+M_firm = renamevars(M_firm, ["M_firm1" "M_firm2"], ["firmID", "FE"] );
+sub_1 = renamevars(sub_1, ["sub_14" ], ["firmID"] );
+sub_2 = renamevars(sub_2, ["sub_24" ], ["firmID"] );
+
+M_pre = join(sub_1,M_firm);
+M_post = join(sub_2,M_firm);
+
+% Step 4: keep quartile and wages 
+M_pre = M_pre(:,[8 9]);
+M_post = M_post(:, [8 9] );
+M_pre = table2array(M_pre);
+M_post = table2array(M_post);
+
+% 4 - 4
+M_pre_4_4 = M_pre(M_pre(:,2)==4 & M_post(:,2)==4 ,:);
+M_post_4_4 = M_post(M_pre(:,2)==4 & M_post(:,2)==4,:);
+% 4 - 3
+M_pre_4_3 = M_pre(M_pre(:,2)==4 & M_post(:,2)==3 ,:);
+M_post_4_3 = M_post(M_pre(:,2)==4 & M_post(:,2)==3,:);
+% 4 - 2
+M_pre_4_2 = M_pre(M_pre(:,2)==4 & M_post(:,2)==2 ,:);
+M_post_4_2 = M_post(M_pre(:,2)==4 & M_post(:,2)==2,:);
+% 4 - 1 
+M_pre_4_1 = M_pre(M_pre(:,2)==4 & M_post(:,2)==1 ,:);
+M_post_4_1 = M_post(M_pre(:,2)==4 & M_post(:,2)==1,:);
+% 1 - 4
+M_pre_1_4 = M_pre(M_pre(:,2)==1 & M_post(:,2)==4 ,:);
+M_post_1_4 = M_post(M_pre(:,2)==1 & M_post(:,2)==4,:);
+% 1 - 3
+M_pre_1_3 = M_pre(M_pre(:,2)==1 & M_post(:,2)==3 ,:);
+M_post_1_3 = M_post(M_pre(:,2)==1 & M_post(:,2)==3,:);
+% 1 - 2
+M_pre_1_2 = M_pre(M_pre(:,2)==1 & M_post(:,2)==2 ,:);
+M_post_1_2 = M_post(M_pre(:,2)==1 & M_post(:,2)==2,:);
+% 1 - 1
+M_pre_1_1 = M_pre(M_pre(:,2)==1 & M_post(:,2)==1 ,:);
+M_post_1_1 = M_post(M_pre(:,2)==1 & M_post(:,2)==1,:);
+
+xaxis = -2:1;
+
+figure;
+hold all
+plot(xaxis,[mean(M_pre_4_4(:,1)) mean(M_pre_4_4(:,1)) mean(M_post_4_4(:,1)) mean(M_post_4_4(:,1))],'--o') 
+plot(xaxis,[mean(M_pre_4_3(:,1)) mean(M_pre_4_3(:,1)) mean(M_post_4_3(:,1))  mean(M_post_4_3(:,1))],'--o') 
+plot(xaxis,[mean(M_pre_4_2(:,1)) mean(M_pre_4_2(:,1)) mean(M_post_4_2(:,1))  mean(M_post_4_2(:,1))],'--o') 
+plot(xaxis,[mean(M_pre_4_1(:,1)) mean(M_pre_4_1(:,1)) mean(M_post_4_1(:,1)) mean(M_post_4_1(:,1))],'--o') 
+plot(xaxis,[mean(M_pre_1_4(:,1)) mean(M_pre_1_4(:,1)) mean(M_post_1_4(:,1)) mean(M_post_1_4(:,1))],'--o') 
+plot(xaxis,[mean(M_pre_1_3(:,1)) mean(M_pre_1_3(:,1)) mean(M_post_1_3(:,1)) mean(M_post_1_3(:,1))],'--o') 
+plot(xaxis,[mean(M_pre_1_2(:,1)) mean(M_pre_1_2(:,1)) mean(M_post_1_2(:,1)) mean(M_post_1_2(:,1))],'--o') 
+plot(xaxis,[mean(M_pre_1_1(:,1)) mean(M_pre_1_1(:,1)) mean(M_post_1_1(:,1))  mean(M_post_1_1(:,1))],'--o')
+xlabel('Time (0 = first year on new job)');
+ylabel('log(w)');
+l=legend('4 to 4','4 to 3','4 to 2','4 to 1','1 to 4','1 to 3','1 to 2','1 to 1' );
+set(l,'Location','NorthWest');
+xticks([-2 -1 0 1])
+hold off
 
 
 %% Question: 12 - redoing for 
