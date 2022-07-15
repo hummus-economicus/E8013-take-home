@@ -122,8 +122,8 @@ W(:,8) = w(  sub2ind(  size(w), row,col,col2)  ) ;
 
 % keep variables for regression 
 W = W(:, [ 1 2 4 6 7 8]);
-W(:,2) = grid(W(:,2))
-W(:,4) = grid(W(:,4))
+W(:,2) = grid(W(:,2));
+W(:,4) = grid(W(:,4));
 W(:,end) = log(W(:,end));
 % 1st column = worker ID
 % 2nd column = worker productivity 
@@ -165,8 +165,8 @@ W(:,8) = w(  sub2ind(  size(w), row,col,col2)  ) ;
 
 % keep variables for regression 
 W = W(:, [ 1 2 4 6 7 8]);
-W(:,2) = grid(W(:,2))
-W(:,4) = grid(W(:,4))
+W(:,2) = grid(W(:,2));
+W(:,4) = grid(W(:,4));
 W(:,end) = log(W(:,end));
 % 1st column = worker ID
 % 2nd column = worker productivity 
