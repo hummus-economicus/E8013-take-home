@@ -28,7 +28,6 @@ F = repmat(kron(F(:,:,1), ones(10,1)) ,1,1,T );
 % 
 F(:,2,:) = repmat(1:N_firms*10, 1,1,T);% job IDs
 
-S = rand(grid_size,grid_size,2) -0.5; % trial surplus function 
 S_plus = max(S,0);     
 
 rng('default')

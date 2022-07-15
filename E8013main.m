@@ -94,16 +94,15 @@ set(l,'Location','SouthEast');
 hold off 
 
 %% Question: 8 - simulation 
+load surplus.mat
 
-N_workers = 250;
-N_firms = 25;
-T = 100; % time periods
+N_workers = 50000;
+N_firms = 5000;
+T = 12*56; % time periods
 
 [M,F] = simulation(N_workers,N_firms,T,S,u_n,v_n,w,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,tol,tol_out,MaxIt);
 
 %% Question 8b - Regression  
-
-load surplus.mat
 
 % Keep first month of each year
 months = (1:56)*12 - 11;
@@ -123,6 +122,8 @@ W(:,8) = w(  sub2ind(  size(w), row,col,col2)  ) ;
 
 % keep variables for regression 
 W = W(:, [ 1 2 4 6 7 8]);
+W(:,2) = grid(W(:,2))
+W(:,4) = grid(W(:,4))
 W(:,end) = log(W(:,end));
 % 1st column = worker ID
 % 2nd column = worker productivity 
@@ -145,3 +146,36 @@ sigL = sigL/3;
 [S,u_n,v_n] = solve_model(b,alpha,beta,sigL,sigH,phi,lambda,grid_size,tol,tol_out,MaxIt);
 w = equilibrium_wages(S,u_n,v_n,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,tol,tol_out,MaxIt);
 [M,F] = simulation(N_workers,N_firms,T,S,u_n,v_n,w,b,alpha,beta,sigL,sigH,phi,lambda,grid_size,tol,tol_out,MaxIt);
+% 12b regression
+% Keep first month of each year
+months = (1:56)*12 - 11;
+W = M(:,:,months);
+% Eliminate burn-in period of 50 years:
+W = W(:,:,51:end);
+% reduce to 2 dimensions:
+W = reshape(permute(W, [1 3 2]),6*N_workers,7);
+% Keep employed workers:  
+W(W(:,3)==0,:) = [];
+
+% Create new column for wages 
+row = W(:,2);% grid index of worker productivity
+col = W(:,6);% grid index of firm productivity 
+col2 = W(:,7); % index of job security 
+W(:,8) = w(  sub2ind(  size(w), row,col,col2)  ) ; 
+
+% keep variables for regression 
+W = W(:, [ 1 2 4 6 7 8]);
+W(:,2) = grid(W(:,2))
+W(:,4) = grid(W(:,4))
+W(:,end) = log(W(:,end));
+% 1st column = worker ID
+% 2nd column = worker productivity 
+% 3rd column = firm ID
+% 4th column = firm productivity 
+% 5th column = firm job security 
+% 6th column = log-wage
+
+
+T = table(W);
+filename = 'regression_table_newsigma.xlsx';
+writetable(T,filename,'Sheet',1,'Range','D1')
