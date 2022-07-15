@@ -1,4 +1,5 @@
 cat("\014")      # clean console
+library(xlsx)
 library(dplyr)
 library(readxl)
 library(fixest)
@@ -22,6 +23,8 @@ for (n in 1:length(fixeffs[["firm_ID"]])) {
 for (n in 1:length(fixeffs[["worker_ID"]])) {
   table[["worker FE"]][table$worker_ID == n] <- fixeffs[["worker_ID"]][n]
 }
+
+write.xlsx(fixeffs[["firm_ID"]], file="firmFE.xlsx")
 
 # headline
 cor(table$`worker productivity`, table$`firm productivity`, method = "pearson", use = "complete.obs")
