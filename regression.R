@@ -4,9 +4,13 @@ library(readxl)
 library(fixest)
 table <- read_excel("regression_table.xlsx")
 table <- rename(table, worker_ID = W_1)
-table <- rename(table, firm_ID = W_2)
-table <- rename(table, loq_wage = W_3)
+table <- rename(table, `worker productivity` = W_2)
+table <- rename(table, firm_ID = W_3)
+table <- rename(table, `firm productivity` = W_4)
+table <- rename(table, stable = W_5)
+table <- rename(table, loq_wage = W_6)
 
+table$stable <- (table$stable == 1)
 
 reg = feols(table$loq_wage ~ 1 | worker_ID + firm_ID , data = table)
 
