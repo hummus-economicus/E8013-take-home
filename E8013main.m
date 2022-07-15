@@ -122,15 +122,21 @@ col2 = W(:,7); % index of job security
 W(:,8) = w(  sub2ind(  size(w), row,col,col2)  ) ; 
 
 % keep variables for regression 
-W(:,[2 3 5 6 7]) = [];
-W(:,3) = log(W(:,3));
+W = W(:, [ 1 2 4 6 7 8]);
+W(:,end) = log(W(:,end));
 % 1st column = worker ID
-% 2nd column = firm ID
-% 3rd column = log-wage
+% 2nd column = worker productivity 
+% 3rd column = firm ID
+% 4th column = firm productivity 
+% 5th column = firm job security 
+% 6th column = log-wage
+
 
 T = table(W);
 filename = 'regression_table.xlsx';
 writetable(T,filename,'Sheet',1,'Range','D1')
+
+% W is 218000x3
 
 
 %% Question: 12 - redoing for 
